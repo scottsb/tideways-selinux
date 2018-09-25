@@ -1,0 +1,180 @@
+
+## <summary>policy for tideways</summary>
+
+########################################
+## <summary>
+##     Execute tideways_exec_t in the Tideways domain.
+## </summary>
+## <param name="domain">
+## <summary>
+##      Domain allowed to transition.
+## </summary>
+## </param>
+#
+interface(`tideways_domtrans',`
+    gen_require(`
+        type tideways_t, tideways_exec_t;
+    ')
+
+    corecmd_search_bin($1)
+    domtrans_pattern($1, tideways_exec_t, tideways_t)
+')
+
+######################################
+## <summary>
+##     Execute Tideways in the caller domain.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`tideways_exec',`
+    gen_require(`
+        type tideways_exec_t;
+    ')
+
+    corecmd_search_bin($1)
+    can_exec($1, tideways_exec_t)
+')
+
+########################################
+## <summary>
+##     Read tideways's log files.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+## <rolecap/>
+#
+interface(`tideways_read_log',`
+    gen_require(`
+        type tideways_log_t;
+    ')
+
+    logging_search_logs($1)
+    read_files_pattern($1, tideways_log_t, tideways_log_t)
+')
+
+########################################
+## <summary>
+##     Append to Tideways log files.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`tideways_append_log',`
+    gen_require(`
+        type tideways_log_t;
+    ')
+
+    logging_search_logs($1)
+    append_files_pattern($1, tideways_log_t, tideways_log_t)
+')
+
+########################################
+## <summary>
+##     Manage Tideways log files
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`tideways_manage_log',`
+    gen_require(`
+        type tideways_log_t;
+    ')
+
+    logging_search_logs($1)
+    manage_dirs_pattern($1, tideways_log_t, tideways_log_t)
+    manage_files_pattern($1, tideways_log_t, tideways_log_t)
+    manage_lnk_files_pattern($1, tideways_log_t, tideways_log_t)
+')
+
+########################################
+## <summary>
+##     Read Tideways PID files.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`tideways_read_pid_files',`
+    gen_require(`
+        type tideways_var_run_t;
+    ')
+
+    files_search_pids($1)
+    read_files_pattern($1, tideways_var_run_t, tideways_var_run_t)
+')
+
+########################################
+## <summary>
+##     All of the rules required to administrate
+##     an Tideways environment
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+## <param name="role">
+##     <summary>
+##         Role allowed access.
+##     </summary>
+## </param>
+## <rolecap/>
+#
+interface(`tideways_admin',`
+    gen_require(`
+        type tideways_t;
+        type tideways_log_t;
+        type tideways_var_run_t;
+    ')
+
+    allow $1 tideways_t:process { signal_perms };
+    ps_process_pattern($1, tideways_t)
+
+    tunable_policy(`deny_ptrace',`',`
+        allow $1 tideways_t:process ptrace;
+    ')
+
+    logging_search_logs($1)
+    admin_pattern($1, tideways_log_t)
+
+    files_search_pids($1)
+    admin_pattern($1, tideways_var_run_t)
+    optional_policy(`
+        systemd_passwd_agent_exec($1)
+        systemd_read_fifo_file_passwd_run($1)
+    ')
+')
+
+########################################
+## <summary>
+##     Allow domain to stream socket connect
+##     to Tideways daemon.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`tideways_stream_connect', `
+    gen_require(`
+        type tideways_t;
+    ')
+
+    allow $1 tideways_t:unix_stream_socket connectto;
+')

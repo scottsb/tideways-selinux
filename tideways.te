@@ -1,0 +1,55 @@
+policy_module(tideways, 1.0.0)
+
+########################################
+#
+# Declarations
+#
+
+type tideways_t;
+type tideways_exec_t;
+init_daemon_domain(tideways_t, tideways_exec_t)
+
+type tideways_log_t;
+logging_log_file(tideways_log_t)
+
+type tideways_var_run_t;
+files_pid_file(tideways_var_run_t)
+
+########################################
+#
+# Tideways policy
+#
+
+allow tideways_t self:fifo_file rw_fifo_file_perms;
+allow tideways_t self:unix_stream_socket create_stream_socket_perms;
+
+manage_dirs_pattern(tideways_t, tideways_log_t, tideways_log_t)
+manage_files_pattern(tideways_t, tideways_log_t, tideways_log_t)
+manage_lnk_files_pattern(tideways_t, tideways_log_t, tideways_log_t)
+logging_log_filetrans(tideways_t, tideways_log_t, { dir file lnk_file })
+
+manage_dirs_pattern(tideways_t, tideways_var_run_t, tideways_var_run_t)
+manage_files_pattern(tideways_t, tideways_var_run_t, tideways_var_run_t)
+manage_lnk_files_pattern(tideways_t, tideways_var_run_t, tideways_var_run_t)
+manage_sock_files_pattern(tideways_t, tideways_var_run_t, tideways_var_run_t)
+files_pid_filetrans(tideways_t, tideways_var_run_t, { dir file lnk_file })
+
+files_read_etc_files(tideways_t)
+kernel_read_system_state(tideways_t)
+
+sysnet_dns_name_resolve(tideways_t)
+corenet_tcp_bind_generic_node(tideways_t)
+corenet_tcp_connect_http_port(tideways_t)
+corenet_udp_bind_generic_node(tideways_t)
+corenet_udp_bind_generic_port(tideways_t)
+
+########################################
+#
+# External permissions
+#
+
+require {
+    type httpd_t;
+}
+
+tideways_stream_connect(httpd_t)

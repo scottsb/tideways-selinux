@@ -1,0 +1,3 @@
+/usr/bin/tideways-daemon
+/var/log/tideways
+/var/run/tideways
