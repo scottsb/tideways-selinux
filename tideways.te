@@ -50,6 +50,8 @@ corenet_udp_bind_generic_port(tideways_t)
 
 require {
     type httpd_t;
+    type urandom_device_t;
 }
 
 tideways_stream_connect(httpd_t)
+allow tideways_t urandom_device_t:chr_file { read open };
