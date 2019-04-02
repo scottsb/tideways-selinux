@@ -54,4 +54,5 @@ require {
 }
 
 tideways_stream_connect(httpd_t)
+allow httpd_t tideways_var_run_t:sock_file write;
 allow tideways_t urandom_device_t:chr_file { read open };
